@@ -1,0 +1,9 @@
+node_modules/
+dist/
+*.zip
+*.crx
+*.pem
+.claude/
+
+# TypeScript compiled output
+src/**/*.js
