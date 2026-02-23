@@ -4,6 +4,7 @@ import type { Unit } from './models/Unit';
 import type { Worker } from './models/Worker';
 import type { Team } from './models/Team';
 import type { Member } from './models/Member';
+import type { UnitDueDateHistory } from './models/UnitDueDateHistory';
 
 export class AppDatabase extends Dexie {
   projects!: Table<Project, string>;
@@ -11,6 +12,7 @@ export class AppDatabase extends Dexie {
   workers!: Table<Worker, string>;
   teams!: Table<Team, number>;
   members!: Table<Member, string>;
+  unitDueDateHistory!: Table<UnitDueDateHistory, number>;
 
   constructor() {
     super('JiraPmsDB');
@@ -27,6 +29,15 @@ export class AppDatabase extends Dexie {
       workers: '&accountId, displayName',
       teams: '++id, name',
       members: '&email, jiraAccountId, teamId',
+    });
+
+    this.version(3).stores({
+      projects: '&jiraKey, projectName, status, lastSyncedAt',
+      units: '&jiraKey, projectKey, assigneeId, status, dueDate, resolutionDate, [projectKey+status]',
+      workers: '&accountId, displayName',
+      teams: '++id, name',
+      members: '&email, jiraAccountId, teamId',
+      unitDueDateHistory: '++id, unitKey, detectedAt',
     });
   }
 }

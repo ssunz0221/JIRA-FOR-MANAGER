@@ -1,14 +1,17 @@
 import { JiraApiClient } from './JiraApiClient';
-import type { JiraIssue, JiraFieldDefinition } from './types';
+import type { JiraIssue, JiraFieldDefinition, JiraProjectItem } from './types';
 import { mapEpicToProject, mapIssueToUnit, extractWorker } from './JiraDataMapper';
 import { projectRepository } from '@/db/repositories/ProjectRepository';
 import { unitRepository } from '@/db/repositories/UnitRepository';
 import { workerRepository } from '@/db/repositories/WorkerRepository';
 import { chromeStorageService } from '@/services/storage/ChromeStorageService';
 import { JIRA_MAX_RESULTS } from '@/utils/constants';
+import { nowKst } from '@/utils/kst';
+import { db } from '@/db/database';
 import type { Project } from '@/db/models/Project';
 import type { Unit } from '@/db/models/Unit';
 import type { Worker } from '@/db/models/Worker';
+import type { UnitDueDateHistory } from '@/db/models/UnitDueDateHistory';
 
 const EPIC_FIELDS = ['summary', 'description', 'status', 'assignee', 'issuetype'];
 const ISSUE_FIELDS = [
@@ -26,6 +29,11 @@ export class JiraAdapter {
   /** 연결 테스트 */
   async testConnection() {
     return this.client.testConnection();
+  }
+
+  /** 접근 가능한 JIRA 프로젝트 목록 조회 */
+  async getProjects(): Promise<JiraProjectItem[]> {
+    return this.client.getProjects();
   }
 
   /**
@@ -56,10 +64,15 @@ export class JiraAdapter {
   }
 
   /**
-   * 모든 Epic을 페이징하여 가져온다.
+   * 선택된 프로젝트(또는 전체)의 Epic을 페이징하여 가져온다.
    */
   async fetchAllEpics(): Promise<JiraIssue[]> {
-    return this.fetchAllPages('issuetype = Epic ORDER BY key ASC', EPIC_FIELDS);
+    const config = await chromeStorageService.getConfig();
+    const keys = config.selectedProjectKeys;
+    const jql = keys?.length
+      ? `project in (${keys.join(',')}) AND issuetype = Epic ORDER BY key ASC`
+      : `issuetype = Epic ORDER BY key ASC`;
+    return this.fetchAllPages(jql, EPIC_FIELDS);
   }
 
   /**
@@ -117,7 +130,28 @@ export class JiraAdapter {
       }
     }
 
-    // 3. DB에 일괄 적재
+    // 3. dueDate 변경 이력 감지
+    const existingUnits = await unitRepository.getAll();
+    const existingMap = new Map(existingUnits.map((u) => [u.jiraKey, u.dueDate ?? '']));
+    const histories: UnitDueDateHistory[] = [];
+    const now = nowKst();
+
+    for (const unit of allUnits) {
+      const prev = existingMap.get(unit.jiraKey);
+      if (prev !== undefined && prev !== (unit.dueDate ?? '')) {
+        histories.push({
+          unitKey: unit.jiraKey,
+          previousDueDate: prev,
+          newDueDate: unit.dueDate ?? '',
+          detectedAt: now,
+        });
+      }
+    }
+    if (histories.length > 0) {
+      await db.unitDueDateHistory.bulkAdd(histories);
+    }
+
+    // 4. DB에 일괄 적재
     await projectRepository.bulkPut(projects);
     await unitRepository.bulkPut(allUnits);
     await workerRepository.bulkPut(Array.from(workerMap.values()));

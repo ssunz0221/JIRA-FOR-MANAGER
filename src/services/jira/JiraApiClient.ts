@@ -2,6 +2,7 @@ import type {
   JiraSearchResponse,
   JiraFieldDefinition,
   JiraMyselfResponse,
+  JiraProjectItem,
 } from './types';
 
 export class JiraApiError extends Error {
@@ -65,5 +66,10 @@ export class JiraApiClient {
   /** 필드 목록 조회 (Epic Link 커스텀 필드 감지용) */
   async getFields(): Promise<JiraFieldDefinition[]> {
     return this.request<JiraFieldDefinition[]>('/field');
+  }
+
+  /** 접근 가능한 JIRA 프로젝트 목록 조회 */
+  async getProjects(): Promise<JiraProjectItem[]> {
+    return this.request<JiraProjectItem[]>('/project');
   }
 }

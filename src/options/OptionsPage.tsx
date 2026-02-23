@@ -1,6 +1,7 @@
 import { useChromeStorage } from '@/hooks/useChromeStorage';
 import { PatInputForm } from '@/components/options/PatInputForm';
 import { ConnectionTest } from '@/components/options/ConnectionTest';
+import { SyncProjectForm } from '@/components/options/SyncProjectForm';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function OptionsPage() {
@@ -24,6 +25,13 @@ export default function OptionsPage() {
             <h2 className="mb-4 text-lg font-semibold text-gray-800">연결 테스트</h2>
             <ConnectionTest config={config} />
           </section>
+
+          {config && (
+            <section className="rounded-lg border border-gray-200 bg-white p-6">
+              <h2 className="mb-4 text-lg font-semibold text-gray-800">동기화 프로젝트 선택</h2>
+              <SyncProjectForm config={config} onSave={saveConfig} />
+            </section>
+          )}
         </div>
       </div>
     </div>

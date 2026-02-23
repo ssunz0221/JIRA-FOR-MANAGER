@@ -74,3 +74,10 @@ export interface JiraMyselfResponse {
   emailAddress?: string;
   active: boolean;
 }
+
+/** JIRA REST API /rest/api/2/project 응답 항목 */
+export interface JiraProjectItem {
+  key: string;
+  name: string;
+  projectTypeKey?: string;
+}

@@ -3,6 +3,7 @@ export interface JiraConfig {
   pat: string;
   syncIntervalMinutes: number;
   epicLinkFieldId?: string;
+  selectedProjectKeys?: string[];
 }
 
 const STORAGE_KEYS = {

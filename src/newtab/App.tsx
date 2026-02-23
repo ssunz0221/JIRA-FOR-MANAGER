@@ -1,25 +1,44 @@
 import { useState } from 'react';
+import { useLiveQuery } from 'dexie-react-hooks';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { SyncStatusBar } from '@/components/dashboard/SyncStatusBar';
 import { StatsSummaryCard } from '@/components/dashboard/StatsSummaryCard';
 import { ProjectSelector } from '@/components/dashboard/ProjectSelector';
 import { ProjectProgressChart } from '@/components/dashboard/ProjectProgressChart';
+import { DateRangeFilter } from '@/components/dashboard/DateRangeFilter';
+import { EpicDetailModal } from '@/components/dashboard/EpicDetailModal';
 import { MemberRankingTable } from '@/components/dashboard/MemberRankingTable';
 import { TeamEfficiencyChart } from '@/components/dashboard/TeamEfficiencyChart';
 import { WorkerRankingTable } from '@/components/dashboard/WorkerRankingTable';
 import { TeamManager } from '@/components/team/TeamManager';
 import { MemberManager } from '@/components/team/MemberManager';
 import { UnmappedWorkerList } from '@/components/team/UnmappedWorkerList';
-import { useMetrics } from '@/hooks/useMetrics';
+import { useMetrics, type DateRange } from '@/hooks/useMetrics';
+import { useChromeStorage } from '@/hooks/useChromeStorage';
+import { db } from '@/db/database';
 import clsx from 'clsx';
 
 type Tab = 'dashboard' | 'team';
 
 export default function App() {
-  const { projectMetrics, workerMetrics, memberMetrics, teamMetrics, summary, isLoading } = useMetrics();
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedProjectKey, setSelectedProjectKey] = useState<string | null>(null);
+  const [dateRange, setDateRange] = useState<DateRange>({ start: '', end: '' });
+  const [epicModal, setEpicModal] = useState<{ epicKey: string; epicName: string } | null>(null);
+
+  const { config } = useChromeStorage();
+  const { projectMetrics, workerMetrics, memberMetrics, teamMetrics, summary, isLoading } =
+    useMetrics(dateRange);
+
+  // 에픽 모달용: dateRange 필터 없이 해당 에픽의 전체 이슈
+  const epicUnits = useLiveQuery<import('@/db/models/Unit').Unit[]>(
+    async () => {
+      if (!epicModal) return [];
+      return db.units.where('projectKey').equals(epicModal.epicKey).toArray();
+    },
+    [epicModal?.epicKey],
+  ) ?? [];
 
   const filteredProjectMetrics = selectedProjectKey
     ? projectMetrics.filter((p) => p.projectKey === selectedProjectKey)
@@ -60,6 +79,9 @@ export default function App() {
 
           {activeTab === 'dashboard' && (
             <>
+              {/* 기간 필터 */}
+              <DateRangeFilter value={dateRange} onChange={setDateRange} />
+
               {isLoading ? (
                 <LoadingSpinner />
               ) : (
@@ -98,7 +120,10 @@ export default function App() {
                   {/* Project Progress Chart */}
                   <section className="rounded-lg border border-gray-200 bg-white p-6">
                     <h2 className="mb-4 text-lg font-semibold text-gray-800">프로젝트 진행률</h2>
-                    <ProjectProgressChart data={filteredProjectMetrics} />
+                    <ProjectProgressChart
+                      data={filteredProjectMetrics}
+                      onEpicClick={(key, name) => setEpicModal({ epicKey: key, epicName: name })}
+                    />
                   </section>
 
                   {/* Member/Worker Ranking */}
@@ -142,6 +167,17 @@ export default function App() {
           JIRA PMS Dashboard v1.0.0
         </footer>
       </div>
+
+      {/* 에픽 상세 모달 */}
+      {epicModal && (
+        <EpicDetailModal
+          epicKey={epicModal.epicKey}
+          epicName={epicModal.epicName}
+          units={epicUnits}
+          baseUrl={config?.baseUrl ?? ''}
+          onClose={() => setEpicModal(null)}
+        />
+      )}
     </ErrorBoundary>
   );
 }
