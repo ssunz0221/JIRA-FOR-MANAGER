@@ -65,10 +65,15 @@ export function useMetrics(dateRange?: DateRange) {
 
   const projectMetrics: ProjectMetricResult[] = useMemo(() => {
     if (!projects || !filteredUnits) return [];
-    return projects.map((p) =>
+    const all = projects.map((p) =>
       projectMetricsCalc.compute(p, filteredUnits.filter((u) => u.projectKey === p.jiraKey)),
     );
-  }, [projects, filteredUnits]);
+    // 기간 필터가 활성화된 경우 해당 기간에 티켓이 없는 프로젝트 제외
+    if (dateRange?.start || dateRange?.end) {
+      return all.filter((p) => p.totalIssues > 0);
+    }
+    return all;
+  }, [projects, filteredUnits, dateRange]);
 
   // JIRA Worker 기준 메트릭 (하위호환)
   const workerMetrics: WorkerMetricResult[] = useMemo(() => {
