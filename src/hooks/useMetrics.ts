@@ -48,8 +48,13 @@ export function useMetrics(dateRange?: DateRange) {
     return units.filter((u) => {
       const issueStart = u.startDate;
       const issueEnd = u.dueDate ?? u.endDate;
-      // 날짜 정보가 전혀 없으면 항상 포함
-      if (!issueStart && !issueEnd) return true;
+      // startDate/dueDate/endDate 모두 없으면 생성일(createdAt)을 기준으로 판단
+      if (!issueStart && !issueEnd) {
+        const createdDate = u.createdAt.slice(0, 10);
+        if (rangeStart && createdDate < rangeStart) return false;
+        if (createdDate > rangeEnd) return false;
+        return true;
+      }
       // rangeStart가 지정된 경우: issueEnd < rangeStart 이면 제외
       if (rangeStart && issueEnd && issueEnd < rangeStart) return false;
       // rangeEnd는 항상 존재 (미입력 시 오늘): issueStart > rangeEnd 이면 제외
