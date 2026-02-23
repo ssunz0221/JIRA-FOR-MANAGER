@@ -28,6 +28,10 @@ export interface JiraIssueFields {
     name: string;
     subtask: boolean;
   };
+  parent?: {
+    id: string;
+    key: string;
+  } | null;
   assignee?: {
     key?: string;
     name?: string;

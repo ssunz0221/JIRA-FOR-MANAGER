@@ -53,6 +53,39 @@ export interface WorkerMetricResult {
   rank?: number;
 }
 
+/** 월별 개인 통계 */
+export interface MonthlyPersonStat {
+  month: string;              // YYYY-MM
+  accountId: string;
+  displayName: string;
+  teamId?: number;
+  teamName?: string;
+  completedCount: number;     // 처리 건수 (서브태스크 중복제거)
+  estimationTotal: number;    // SP/Estimate 합계 (집계 규칙 적용)
+  otdr: number;
+  aod: number;
+}
+
+/** 월별 팀 통계 */
+export interface MonthlyTeamStat {
+  month: string;
+  teamId: number;
+  teamName: string;
+  completedCount: number;
+  estimationTotal: number;
+  otdr: number;
+  aod: number;
+}
+
+/** 월별 전체 통계 */
+export interface MonthlyTotalStat {
+  month: string;
+  completedCount: number;
+  estimationTotal: number;
+  otdr: number;
+  aod: number;
+}
+
 /** 효율성 계산 결과 */
 export interface EfficiencyResult {
   totalResolved: number;

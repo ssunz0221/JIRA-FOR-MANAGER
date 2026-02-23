@@ -14,6 +14,8 @@ import { TeamManager } from '@/components/team/TeamManager';
 import { MemberManager } from '@/components/team/MemberManager';
 import { UnmappedWorkerList } from '@/components/team/UnmappedWorkerList';
 import { useMetrics, type DateRange } from '@/hooks/useMetrics';
+import { TeamMemberFilter, type MemberFilter } from '@/components/dashboard/TeamMemberFilter';
+import { MonthlyStatsSection } from '@/components/dashboard/MonthlyStatsSection';
 import { useChromeStorage } from '@/hooks/useChromeStorage';
 import clsx from 'clsx';
 
@@ -23,11 +25,12 @@ export default function App() {
   const [activeTab, setActiveTab] = useState<Tab>('dashboard');
   const [selectedProjectKey, setSelectedProjectKey] = useState<string | null>(null);
   const [dateRange, setDateRange] = useState<DateRange>({ start: '', end: '' });
+  const [memberFilter, setMemberFilter] = useState<MemberFilter>({});
   const [epicModal, setEpicModal] = useState<{ epicKey: string; epicName: string } | null>(null);
 
   const { config } = useChromeStorage();
   const { projectMetrics, workerMetrics, memberMetrics, teamMetrics, summary, isLoading, filteredUnits } =
-    useMetrics(dateRange);
+    useMetrics(dateRange, memberFilter);
 
   // 에픽 모달용: dateRange 필터가 적용된 이슈 중 해당 에픽 것만
   const epicUnits = epicModal
@@ -73,8 +76,12 @@ export default function App() {
 
           {activeTab === 'dashboard' && (
             <>
-              {/* 기간 필터 */}
-              <DateRangeFilter value={dateRange} onChange={setDateRange} />
+              {/* 필터 */}
+              <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+                <DateRangeFilter value={dateRange} onChange={setDateRange} />
+                <div className="h-6 w-px bg-gray-200" />
+                <TeamMemberFilter value={memberFilter} onChange={setMemberFilter} />
+              </div>
 
               {isLoading ? (
                 <LoadingSpinner />
@@ -131,6 +138,13 @@ export default function App() {
                       <WorkerRankingTable data={workerMetrics} />
                     )}
                   </section>
+
+                  {/* Monthly Stats */}
+                  <MonthlyStatsSection
+                    filteredUnits={filteredUnits}
+                    memberFilter={memberFilter}
+                    estimationType={config?.estimationType}
+                  />
                 </>
               )}
             </>

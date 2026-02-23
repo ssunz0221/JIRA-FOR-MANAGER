@@ -19,7 +19,6 @@ export class IdentityMapper {
     const workers = await workerRepository.getAll();
     const members = await memberRepository.getAll();
 
-    // 매핑 인덱스 구축: jiraAccountId → Member, email → Member
     const byAccountId = new Map<string, Member>();
     const byEmail = new Map<string, Member>();
     for (const member of members) {
@@ -30,6 +29,8 @@ export class IdentityMapper {
     const unmapped: UnmappedWorker[] = [];
 
     for (const worker of workers) {
+      if (worker.excluded) continue;
+
       const matchByAccountId = byAccountId.has(worker.accountId);
       const matchByEmail = worker.email && byEmail.has(worker.email.toLowerCase());
 
@@ -43,6 +44,30 @@ export class IdentityMapper {
     }
 
     return unmapped;
+  }
+
+  /** 제외 처리된 작업자 목록을 반환한다. */
+  async findExcludedWorkers(): Promise<UnmappedWorker[]> {
+    const workers = await workerRepository.getAll();
+    return workers
+      .filter((w) => w.excluded)
+      .map((w) => ({ accountId: w.accountId, displayName: w.displayName, email: w.email }));
+  }
+
+  /** 작업자를 제외 처리한다. 해당 작업자의 이슈는 모든 통계에서 제외된다. */
+  async excludeWorker(accountId: string): Promise<void> {
+    const worker = await workerRepository.getByKey(accountId);
+    if (!worker) return;
+    worker.excluded = true;
+    await workerRepository.put(worker);
+  }
+
+  /** 제외 처리된 작업자를 복원한다. */
+  async restoreWorker(accountId: string): Promise<void> {
+    const worker = await workerRepository.getByKey(accountId);
+    if (!worker) return;
+    worker.excluded = false;
+    await workerRepository.put(worker);
   }
 
   /**

@@ -8,12 +8,12 @@ export interface IEfficiencyStrategy {
   parseDeadline(dueDate: string | undefined): Dayjs | null;
 
   /**
-   * 해결일이 마감일 이내인지 판단한다.
+   * 종료일이 마감일 이내인지 판단한다.
    */
-  isOnTime(resolutionDateKst: Dayjs, deadline: Dayjs): boolean;
+  isOnTime(completionDate: Dayjs, deadline: Dayjs): boolean;
 
   /**
    * 지연 일수를 계산한다. 기한 내이면 0.
    */
-  getOverdueDays(resolutionDateKst: Dayjs, deadline: Dayjs): number;
+  getOverdueDays(completionDate: Dayjs, deadline: Dayjs): number;
 }

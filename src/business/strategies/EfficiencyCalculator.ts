@@ -12,11 +12,12 @@ export class EfficiencyCalculator {
 
   /**
    * Unit 목록에 대한 효율성 지표(OTDR, AOD)를 계산한다.
+   * 완료 기준: statusCategory === 'done' && endDate(종료일) 존재
    */
   calculate(units: Unit[]): EfficiencyResult {
-    // 완료된(done) 이슈만 대상
+    // 완료된(done) + 종료일(endDate)이 있는 이슈만 대상
     const resolved = units.filter(
-      (u) => u.statusCategory === 'done' && u.resolutionDateKst,
+      (u) => u.statusCategory === 'done' && u.endDate,
     );
     const totalResolved = resolved.length;
 
@@ -32,13 +33,14 @@ export class EfficiencyCalculator {
       const deadline = this.strategy.parseDeadline(unit.dueDate);
       if (!deadline) continue;
 
-      const resolution = dayjs(unit.resolutionDateKst).tz(KST);
+      // endDate(종료일)를 KST 해당일 23:59:59로 변환하여 비교
+      const completion = dayjs.tz(`${unit.endDate} 23:59:59`, KST);
 
-      if (this.strategy.isOnTime(resolution, deadline)) {
+      if (this.strategy.isOnTime(completion, deadline)) {
         onTimeCount++;
       } else {
         overdueCount++;
-        totalOverdueDays += this.strategy.getOverdueDays(resolution, deadline);
+        totalOverdueDays += this.strategy.getOverdueDays(completion, deadline);
       }
     }
 

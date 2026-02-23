@@ -14,7 +14,15 @@ export class SyncService {
     await syncStatusTracker.markSyncing();
 
     try {
-      const { epicCount, issueCount } = await this.adapter.fullSync();
+      const result = await this.adapter.fullSync();
+
+      if (result.skipped) {
+        await syncStatusTracker.markError('동기화할 프로젝트가 선택되지 않았습니다. 설정에서 프로젝트를 선택해주세요.');
+        console.warn('[JIRA PMS] Sync skipped: no projects selected');
+        return;
+      }
+
+      const { epicCount, issueCount } = result;
 
       // 동기화 후 이메일 기반 자동 매핑 시도
       const autoMapped = await identityMapper.autoMapByEmail();

@@ -4,6 +4,12 @@ export interface JiraConfig {
   syncIntervalMinutes: number;
   epicLinkFieldId?: string;
   selectedProjectKeys?: string[];
+  /** 'storyPoint' | 'estimate' | undefined(미사용) */
+  estimationType?: 'storyPoint' | 'estimate';
+  /** Story Point 커스텀 필드 ID (예: customfield_10016) */
+  storyPointFieldId?: string;
+  /** Estimate 커스텀 필드 ID (비어있으면 timetracking.originalEstimate 사용) */
+  estimateFieldId?: string;
 }
 
 const STORAGE_KEYS = {

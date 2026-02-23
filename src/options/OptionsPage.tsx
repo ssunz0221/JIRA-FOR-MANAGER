@@ -2,6 +2,7 @@ import { useChromeStorage } from '@/hooks/useChromeStorage';
 import { PatInputForm } from '@/components/options/PatInputForm';
 import { ConnectionTest } from '@/components/options/ConnectionTest';
 import { SyncProjectForm } from '@/components/options/SyncProjectForm';
+import { EstimationSettingForm } from '@/components/options/EstimationSettingForm';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 
 export default function OptionsPage() {
@@ -30,6 +31,16 @@ export default function OptionsPage() {
             <section className="rounded-lg border border-gray-200 bg-white p-6">
               <h2 className="mb-4 text-lg font-semibold text-gray-800">동기화 프로젝트 선택</h2>
               <SyncProjectForm config={config} onSave={saveConfig} />
+            </section>
+          )}
+
+          {config && (
+            <section className="rounded-lg border border-gray-200 bg-white p-6">
+              <h2 className="mb-4 text-lg font-semibold text-gray-800">추정치 설정</h2>
+              <p className="mb-4 text-sm text-gray-500">
+                동기화 시 이슈에서 가져올 추정치 유형을 선택합니다.
+              </p>
+              <EstimationSettingForm config={config} onSave={saveConfig} />
             </section>
           )}
         </div>

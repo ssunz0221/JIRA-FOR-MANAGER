@@ -3,12 +3,17 @@ import { identityMapper, type UnmappedWorker } from '@/services/identity/Identit
 
 export function useUnmappedWorkers() {
   const [unmappedWorkers, setUnmappedWorkers] = useState<UnmappedWorker[]>([]);
+  const [excludedWorkers, setExcludedWorkers] = useState<UnmappedWorker[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const workers = await identityMapper.findUnmappedWorkers();
-    setUnmappedWorkers(workers);
+    const [unmapped, excluded] = await Promise.all([
+      identityMapper.findUnmappedWorkers(),
+      identityMapper.findExcludedWorkers(),
+    ]);
+    setUnmappedWorkers(unmapped);
+    setExcludedWorkers(excluded);
     setLoading(false);
   }, []);
 
@@ -30,5 +35,15 @@ export function useUnmappedWorkers() {
     await refresh();
   };
 
-  return { unmappedWorkers, loading, refresh, mapToMember, registerAsMember };
+  const excludeWorker = async (accountId: string) => {
+    await identityMapper.excludeWorker(accountId);
+    await refresh();
+  };
+
+  const restoreWorker = async (accountId: string) => {
+    await identityMapper.restoreWorker(accountId);
+    await refresh();
+  };
+
+  return { unmappedWorkers, excludedWorkers, loading, refresh, mapToMember, registerAsMember, excludeWorker, restoreWorker };
 }

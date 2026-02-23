@@ -15,18 +15,20 @@ export interface Unit {
   assigneeName?: string;
   /** 이슈 시작일 customfield_10917 (YYYY-MM-DD) */
   startDate?: string;
-  /** JIRA 원본 마감일 customfield_duedate (YYYY-MM-DD) */
-  dueDate?: string;
-  /** 이슈 종료일 customfield_10918 (YYYY-MM-DD) — dueDate 없을 때 대체 사용 */
+  /** 이슈 종료일 customfield_10918 (YYYY-MM-DD) */
   endDate?: string;
-  /** JIRA 원본 해결일 (ISO 8601) */
-  resolutionDate?: string;
+  /** JIRA 원본 마감일 (YYYY-MM-DD) */
+  dueDate?: string;
   /** KST 변환된 마감일 (해당일 23:59:59 KST, ISO 8601) */
   dueDateKst?: string;
-  /** KST 변환된 해결일 (ISO 8601) */
-  resolutionDateKst?: string;
   /** 우선순위명 */
   priority?: string;
+  /** 부모 이슈 키 (서브태스크인 경우) */
+  parentKey?: string;
+  /** 서브태스크 여부 */
+  isSubtask?: boolean;
+  /** Story Point 또는 Estimate 값 (SP: 원본, Estimate: 초→시간 변환) */
+  storyPoints?: number;
   /** 이슈 유형 (예: "Story", "Task", "Bug") */
   issueType: string;
   /** 생성일 (ISO 8601) */

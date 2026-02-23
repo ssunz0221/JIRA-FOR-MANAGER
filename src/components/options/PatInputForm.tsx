@@ -37,6 +37,10 @@ export function PatInputForm({ config, onSave }: Props) {
         pat,
         syncIntervalMinutes: syncInterval,
         epicLinkFieldId: config?.epicLinkFieldId,
+        selectedProjectKeys: config?.selectedProjectKeys,
+        estimationType: config?.estimationType,
+        storyPointFieldId: config?.storyPointFieldId,
+        estimateFieldId: config?.estimateFieldId,
       });
       setMessage({ type: 'success', text: '설정이 저장되었습니다.' });
     } catch (err) {

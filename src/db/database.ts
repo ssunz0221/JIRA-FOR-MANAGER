@@ -39,6 +39,36 @@ export class AppDatabase extends Dexie {
       members: '&email, jiraAccountId, teamId',
       unitDueDateHistory: '++id, unitKey, detectedAt',
     });
+
+    // v4: resolutionDate 인덱스 제거 (endDate로 대체), endDate 인덱스 추가
+    this.version(4).stores({
+      projects: '&jiraKey, projectName, status, lastSyncedAt',
+      units: '&jiraKey, projectKey, assigneeId, status, dueDate, endDate, [projectKey+status]',
+      workers: '&accountId, displayName',
+      teams: '++id, name',
+      members: '&email, jiraAccountId, teamId',
+      unitDueDateHistory: '++id, unitKey, detectedAt',
+    });
+
+    // v5: parentKey 인덱스 추가 (서브태스크 지원)
+    this.version(5).stores({
+      projects: '&jiraKey, projectName, status, lastSyncedAt',
+      units: '&jiraKey, projectKey, assigneeId, status, dueDate, endDate, parentKey, [projectKey+status]',
+      workers: '&accountId, displayName',
+      teams: '++id, name',
+      members: '&email, jiraAccountId, teamId',
+      unitDueDateHistory: '++id, unitKey, detectedAt',
+    });
+
+    // v6: storyPoints 필드 추가 (인덱스 불필요 — 집계 전용)
+    this.version(6).stores({
+      projects: '&jiraKey, projectName, status, lastSyncedAt',
+      units: '&jiraKey, projectKey, assigneeId, status, dueDate, endDate, parentKey, [projectKey+status]',
+      workers: '&accountId, displayName',
+      teams: '++id, name',
+      members: '&email, jiraAccountId, teamId',
+      unitDueDateHistory: '++id, unitKey, detectedAt',
+    });
   }
 }
 

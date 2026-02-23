@@ -20,15 +20,14 @@ export class DueDateStrategy implements IEfficiencyStrategy {
     return parsed.isValid() ? parsed : null;
   }
 
-  isOnTime(resolutionDateKst: Dayjs, deadline: Dayjs): boolean {
-    return resolutionDateKst.isSameOrBefore(deadline);
+  isOnTime(completionDate: Dayjs, deadline: Dayjs): boolean {
+    return completionDate.isSameOrBefore(deadline);
   }
 
-  getOverdueDays(resolutionDateKst: Dayjs, deadline: Dayjs): number {
-    if (this.isOnTime(resolutionDateKst, deadline)) return 0;
-    // KST 기준 날짜 단위 차이 계산
-    const resolutionDay = resolutionDateKst.tz(KST).startOf('day');
+  getOverdueDays(completionDate: Dayjs, deadline: Dayjs): number {
+    if (this.isOnTime(completionDate, deadline)) return 0;
+    const completionDay = completionDate.tz(KST).startOf('day');
     const deadlineDay = deadline.tz(KST).startOf('day');
-    return resolutionDay.diff(deadlineDay, 'day');
+    return completionDay.diff(deadlineDay, 'day');
   }
 }

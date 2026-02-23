@@ -21,7 +21,7 @@ export function DateRangeFilter({ value, onChange }: Props) {
   const isActive = value.start || value.end;
 
   return (
-    <div className="flex flex-wrap items-center gap-3 rounded-lg border border-gray-200 bg-white px-4 py-3">
+    <div className="flex flex-wrap items-center gap-3">
       <span className="text-sm font-medium text-gray-600">기간 조회</span>
       <div className="flex items-center gap-2">
         <input
