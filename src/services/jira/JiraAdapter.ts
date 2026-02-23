@@ -17,6 +17,8 @@ const EPIC_FIELDS = ['summary', 'description', 'status', 'assignee', 'issuetype'
 const ISSUE_FIELDS = [
   'summary', 'status', 'assignee', 'duedate', 'resolutiondate',
   'issuetype', 'priority', 'created', 'updated',
+  'customfield_10917', // Start date
+  'customfield_10918', // End date (due date 대체)
 ];
 
 export class JiraAdapter {

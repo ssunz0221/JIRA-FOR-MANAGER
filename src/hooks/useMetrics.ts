@@ -35,17 +35,25 @@ export function useMetrics(dateRange?: DateRange) {
     members === undefined ||
     teams === undefined;
 
-  // dueDate 기준 필터링: 시작일~종료일 사이인 이슈만 포함
-  // dueDate 없는 이슈는 항상 포함 (무기한 작업)
-  // 종료일 미입력 시 오늘(KST)을 상한으로 사용
+  // 기간 필터링: 이슈의 [startDate, effectiveEndDate] 구간과 선택 기간의 겹침 검사
+  // - 이슈 시작: customfield_10917 (startDate)
+  // - 이슈 종료: dueDate 우선, 없으면 customfield_10918 (endDate) 대체
+  // - 종료일(rangeEnd) 미입력 시 오늘(KST)을 상한으로 사용
+  // - 이슈에 날짜가 전혀 없으면 항상 포함 (무기한 작업)
   const filteredUnits = useMemo(() => {
     if (!units) return [];
     if (!dateRange?.start && !dateRange?.end) return units;
-    const effectiveEnd = dateRange?.end || nowKst().slice(0, 10);
+    const rangeEnd = dateRange?.end || nowKst().slice(0, 10);
+    const rangeStart = dateRange?.start || '';
     return units.filter((u) => {
-      if (!u.dueDate) return true;
-      if (dateRange?.start && u.dueDate < dateRange.start) return false;
-      if (u.dueDate > effectiveEnd) return false;
+      const issueStart = u.startDate;
+      const issueEnd = u.dueDate ?? u.endDate;
+      // 날짜 정보가 전혀 없으면 항상 포함
+      if (!issueStart && !issueEnd) return true;
+      // rangeStart가 지정된 경우: issueEnd < rangeStart 이면 제외
+      if (rangeStart && issueEnd && issueEnd < rangeStart) return false;
+      // rangeEnd는 항상 존재 (미입력 시 오늘): issueStart > rangeEnd 이면 제외
+      if (issueStart && issueStart > rangeEnd) return false;
       return true;
     });
   }, [units, dateRange]);

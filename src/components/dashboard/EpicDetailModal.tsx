@@ -136,7 +136,8 @@ export function EpicDetailModal({ epicKey, epicName, units, baseUrl, onClose }: 
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500">제목</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-28">담당자</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-20">상태</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-36">마감일</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-28">시작일</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-44">마감일</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-28">해결일</th>
                 </tr>
               </thead>
@@ -160,9 +161,25 @@ export function EpicDetailModal({ epicKey, epicName, units, baseUrl, onClose }: 
                     <td className="px-4 py-3">
                       {statusBadge(unit.statusCategory)}
                     </td>
+                    {/* 시작일 (customfield_10917) */}
+                    <td className="px-4 py-3 text-sm text-gray-600">
+                      {unit.startDate ?? '-'}
+                    </td>
+                    {/* 마감일: dueDate 우선, 없으면 endDate(customfield_10918) 대체 */}
                     <td className="px-4 py-3 text-sm text-gray-600">
                       <div className="flex flex-wrap items-center gap-1">
-                        <span>{unit.dueDate ?? '-'}</span>
+                        {unit.dueDate ? (
+                          <span>{unit.dueDate}</span>
+                        ) : unit.endDate ? (
+                          <>
+                            <span>{unit.endDate}</span>
+                            <span className="rounded bg-amber-100 px-1.5 py-0.5 text-xs font-medium text-amber-700">
+                              마감일 없음
+                            </span>
+                          </>
+                        ) : (
+                          <span>-</span>
+                        )}
                         <DueDateHistoryRow unitKey={unit.jiraKey} />
                       </div>
                     </td>

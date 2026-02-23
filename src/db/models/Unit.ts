@@ -13,8 +13,12 @@ export interface Unit {
   assigneeId?: string;
   /** 담당자 표시 이름 (비정규화) */
   assigneeName?: string;
-  /** JIRA 원본 마감일 (YYYY-MM-DD) */
+  /** 이슈 시작일 customfield_10917 (YYYY-MM-DD) */
+  startDate?: string;
+  /** JIRA 원본 마감일 customfield_duedate (YYYY-MM-DD) */
   dueDate?: string;
+  /** 이슈 종료일 customfield_10918 (YYYY-MM-DD) — dueDate 없을 때 대체 사용 */
+  endDate?: string;
   /** JIRA 원본 해결일 (ISO 8601) */
   resolutionDate?: string;
   /** KST 변환된 마감일 (해당일 23:59:59 KST, ISO 8601) */
