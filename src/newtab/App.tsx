@@ -1,5 +1,4 @@
 import { useState } from 'react';
-import { useLiveQuery } from 'dexie-react-hooks';
 import { ErrorBoundary } from '@/components/shared/ErrorBoundary';
 import { LoadingSpinner } from '@/components/shared/LoadingSpinner';
 import { SyncStatusBar } from '@/components/dashboard/SyncStatusBar';
@@ -16,7 +15,6 @@ import { MemberManager } from '@/components/team/MemberManager';
 import { UnmappedWorkerList } from '@/components/team/UnmappedWorkerList';
 import { useMetrics, type DateRange } from '@/hooks/useMetrics';
 import { useChromeStorage } from '@/hooks/useChromeStorage';
-import { db } from '@/db/database';
 import clsx from 'clsx';
 
 type Tab = 'dashboard' | 'team';
@@ -28,17 +26,13 @@ export default function App() {
   const [epicModal, setEpicModal] = useState<{ epicKey: string; epicName: string } | null>(null);
 
   const { config } = useChromeStorage();
-  const { projectMetrics, workerMetrics, memberMetrics, teamMetrics, summary, isLoading } =
+  const { projectMetrics, workerMetrics, memberMetrics, teamMetrics, summary, isLoading, filteredUnits } =
     useMetrics(dateRange);
 
-  // 에픽 모달용: dateRange 필터 없이 해당 에픽의 전체 이슈
-  const epicUnits = useLiveQuery<import('@/db/models/Unit').Unit[]>(
-    async () => {
-      if (!epicModal) return [];
-      return db.units.where('projectKey').equals(epicModal.epicKey).toArray();
-    },
-    [epicModal?.epicKey],
-  ) ?? [];
+  // 에픽 모달용: dateRange 필터가 적용된 이슈 중 해당 에픽 것만
+  const epicUnits = epicModal
+    ? filteredUnits.filter((u) => u.projectKey === epicModal.epicKey)
+    : [];
 
   const filteredProjectMetrics = selectedProjectKey
     ? projectMetrics.filter((p) => p.projectKey === selectedProjectKey)

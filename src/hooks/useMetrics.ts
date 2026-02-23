@@ -117,5 +117,6 @@ export function useMetrics(dateRange?: DateRange) {
     teamMetrics,
     summary,
     isLoading,
+    filteredUnits,
   };
 }
