@@ -28,7 +28,7 @@ export function ProjectProgressChart({ data, onEpicClick }: Props) {
   if (data.length === 0) {
     return (
       <div className="flex h-64 items-center justify-center text-gray-400">
-        프로젝트 데이터가 없습니다. 동기화를 먼저 실행해주세요.
+        에픽 데이터가 없습니다. 동기화를 먼저 실행해주세요.
       </div>
     );
   }

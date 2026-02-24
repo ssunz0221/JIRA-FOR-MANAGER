@@ -13,7 +13,7 @@ export function SyncStatusBar() {
             마지막 동기화: {new Date(syncStatus.lastSyncedAt).toLocaleString('ko-KR')}
             {syncStatus.syncedEpics !== undefined && (
               <span className="ml-2 text-gray-400">
-                ({syncStatus.syncedEpics}개 프로젝트, {syncStatus.syncedIssues}개 이슈)
+                ({syncStatus.syncedEpics}개 에픽, {syncStatus.syncedIssues}개 이슈)
               </span>
             )}
           </span>

@@ -2,7 +2,7 @@
   "manifest_version": 3,
   "name": "JIRA PMS Dashboard",
   "version": "1.0.0",
-  "description": "관리자용 JIRA 프로젝트 진척도 및 작업자 효율성 트래킹 대시보드",
+  "description": "관리자용 JIRA 에픽 진척도 및 작업자 효율성 트래킹 대시보드",
   "permissions": [
     "storage",
     "alarms"
@@ -15,8 +15,13 @@
     "type": "module"
   },
   "options_page": "src/options/options.html",
-  "chrome_url_overrides": {
-    "newtab": "src/newtab/newtab.html"
+  "action": {
+    "default_icon": {
+      "16": "public/icons/icon-16.png",
+      "48": "public/icons/icon-48.png",
+      "128": "public/icons/icon-128.png"
+    },
+    "default_title": "JIRA PMS Dashboard"
   },
   "icons": {
     "16": "public/icons/icon-16.png",

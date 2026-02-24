@@ -2,16 +2,42 @@ import { SyncService } from '@/services/sync/SyncService';
 import { chromeStorageService } from '@/services/storage/ChromeStorageService';
 import { syncStatusTracker } from '@/services/sync/SyncStatus';
 import { MSG, DEFAULT_SYNC_INTERVAL_MINUTES } from '@/utils/constants';
+import { db } from '@/db/database';
 
 const ALARM_NAME = 'jira-sync';
 
 console.log('[JIRA PMS] Service worker loaded');
 
-// 설치 시 알람 등록
+// 설치 시 알람 등록 + 기본 팀 자동 생성
 chrome.runtime.onInstalled.addListener(async () => {
   console.log('[JIRA PMS] Extension installed');
   const config = await chromeStorageService.getConfig();
   setupAlarm(config.syncIntervalMinutes || DEFAULT_SYNC_INTERVAL_MINUTES);
+
+  // 팀이 없으면 기본 팀 자동 생성
+  const existingTeams = await db.teams.count();
+  if (existingTeams === 0) {
+    const defaultNames = config.defaultTeamNames ?? ['사업1팀', '사업2팀', '사업3팀', '사업4팀'];
+    for (const name of defaultNames) {
+      await db.teams.add({ name });
+    }
+    console.log(`[JIRA PMS] Created ${defaultNames.length} default teams`);
+  }
+});
+
+// 확장 아이콘 클릭 시 대시보드 탭 열기
+chrome.action.onClicked.addListener(async () => {
+  const dashboardUrl = chrome.runtime.getURL('src/newtab/newtab.html');
+  const tabs = await chrome.tabs.query({ url: dashboardUrl });
+
+  if (tabs.length > 0 && tabs[0].id !== undefined) {
+    await chrome.tabs.update(tabs[0].id, { active: true });
+    if (tabs[0].windowId !== undefined) {
+      await chrome.windows.update(tabs[0].windowId, { focused: true });
+    }
+  } else {
+    await chrome.tabs.create({ url: dashboardUrl });
+  }
 });
 
 // 알람 이벤트 → 자동 동기화

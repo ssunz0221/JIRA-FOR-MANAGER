@@ -1,9 +1,11 @@
+import { useState, useMemo } from 'react';
 import type { Unit } from '@/db/models/Unit';
 import type { MemberFilter } from './TeamMemberFilter';
 import { useMonthlyStats } from '@/hooks/useMonthlyStats';
 import { EstimationInfoBanner } from './EstimationInfoBanner';
 import { MonthlyTotalChart, MonthlyTeamChart, MonthlyPersonChart } from './MonthlyChart';
 import { MonthlyStatsTable } from './MonthlyStatsTable';
+import clsx from 'clsx';
 
 interface Props {
   filteredUnits: Unit[];
@@ -16,6 +18,7 @@ export function MonthlyStatsSection({ filteredUnits, memberFilter, estimationTyp
     filteredUnits,
     memberFilter,
   );
+  const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
   if (isLoading) return null;
 
@@ -28,6 +31,18 @@ export function MonthlyStatsSection({ filteredUnits, memberFilter, estimationTyp
   const isPersonFilter = !!memberFilter?.memberAccountId;
   const isTeamFilter = !!memberFilter?.teamId && !isPersonFilter;
   const isAllFilter = !isPersonFilter && !isTeamFilter;
+
+  // 월 목록 추출 (정렬)
+  const availableMonths = useMemo(() => {
+    const months = new Set(personStats.map((s) => s.month));
+    return Array.from(months).sort();
+  }, [personStats]);
+
+  // 선택된 월로 필터링
+  const filteredPersonStats = useMemo(() => {
+    if (!selectedMonth) return personStats;
+    return personStats.filter((s) => s.month === selectedMonth);
+  }, [personStats, selectedMonth]);
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
@@ -83,11 +98,40 @@ export function MonthlyStatsSection({ filteredUnits, memberFilter, estimationTyp
           </div>
         )}
 
-        {/* 인원별 테이블 (항상 표시) */}
+        {/* 인원별 테이블 (월 선택 탭 포함) */}
         {personStats.length > 0 && (
           <div>
-            <h3 className="mb-3 text-sm font-semibold text-gray-700">인원별 상세</h3>
-            <MonthlyStatsTable data={personStats} estimationLabel={estimationLabel} />
+            <div className="mb-3 flex items-center gap-3">
+              <h3 className="text-sm font-semibold text-gray-700">인원별 상세</h3>
+              <div className="flex flex-wrap gap-1">
+                <button
+                  onClick={() => setSelectedMonth(null)}
+                  className={clsx(
+                    'rounded px-2 py-1 text-xs font-medium transition-colors',
+                    !selectedMonth
+                      ? 'bg-jira-blue text-white'
+                      : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                  )}
+                >
+                  전체
+                </button>
+                {availableMonths.map((month) => (
+                  <button
+                    key={month}
+                    onClick={() => setSelectedMonth(month)}
+                    className={clsx(
+                      'rounded px-2 py-1 text-xs font-medium transition-colors',
+                      selectedMonth === month
+                        ? 'bg-jira-blue text-white'
+                        : 'bg-gray-100 text-gray-600 hover:bg-gray-200',
+                    )}
+                  >
+                    {month}
+                  </button>
+                ))}
+              </div>
+            </div>
+            <MonthlyStatsTable data={filteredPersonStats} estimationLabel={estimationLabel} />
           </div>
         )}
       </div>

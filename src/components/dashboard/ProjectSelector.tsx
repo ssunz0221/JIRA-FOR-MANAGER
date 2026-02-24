@@ -9,7 +9,7 @@ interface Props {
 export function ProjectSelector({ projects, selectedKey, onSelect }: Props) {
   return (
     <div className="flex items-center gap-2">
-      <label className="text-sm font-medium text-gray-700">프로젝트:</label>
+      <label className="text-sm font-medium text-gray-700">에픽:</label>
       <select
         value={selectedKey ?? ''}
         onChange={(e) => onSelect(e.target.value || null)}

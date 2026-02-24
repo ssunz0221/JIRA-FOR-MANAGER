@@ -10,6 +10,8 @@ export interface JiraConfig {
   storyPointFieldId?: string;
   /** Estimate 커스텀 필드 ID (비어있으면 timetracking.originalEstimate 사용) */
   estimateFieldId?: string;
+  /** 기본 팀 이름 목록 */
+  defaultTeamNames?: string[];
 }
 
 const STORAGE_KEYS = {

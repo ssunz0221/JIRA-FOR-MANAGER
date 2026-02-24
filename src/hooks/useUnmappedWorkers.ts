@@ -1,19 +1,14 @@
 import { useState, useEffect, useCallback } from 'react';
-import { identityMapper, type UnmappedWorker } from '@/services/identity/IdentityMapper';
+import { identityMapper, type UnmappedWorkerWithStatus } from '@/services/identity/IdentityMapper';
 
 export function useUnmappedWorkers() {
-  const [unmappedWorkers, setUnmappedWorkers] = useState<UnmappedWorker[]>([]);
-  const [excludedWorkers, setExcludedWorkers] = useState<UnmappedWorker[]>([]);
+  const [workers, setWorkers] = useState<UnmappedWorkerWithStatus[]>([]);
   const [loading, setLoading] = useState(true);
 
   const refresh = useCallback(async () => {
     setLoading(true);
-    const [unmapped, excluded] = await Promise.all([
-      identityMapper.findUnmappedWorkers(),
-      identityMapper.findExcludedWorkers(),
-    ]);
-    setUnmappedWorkers(unmapped);
-    setExcludedWorkers(excluded);
+    const all = await identityMapper.findAllUnmappedOrExcludedWorkers();
+    setWorkers(all);
     setLoading(false);
   }, []);
 
@@ -27,7 +22,7 @@ export function useUnmappedWorkers() {
   };
 
   const registerAsMember = async (
-    worker: UnmappedWorker,
+    worker: UnmappedWorkerWithStatus,
     nickname: string,
     teamId?: number,
   ) => {
@@ -45,5 +40,5 @@ export function useUnmappedWorkers() {
     await refresh();
   };
 
-  return { unmappedWorkers, excludedWorkers, loading, refresh, mapToMember, registerAsMember, excludeWorker, restoreWorker };
+  return { workers, loading, refresh, mapToMember, registerAsMember, excludeWorker, restoreWorker };
 }

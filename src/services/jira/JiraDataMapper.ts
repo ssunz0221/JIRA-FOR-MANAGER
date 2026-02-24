@@ -64,6 +64,7 @@ export function mapIssueToUnit(
     endDate: (fields['customfield_10918'] as string | null | undefined) ?? undefined,
     dueDate: fields.duedate ?? undefined,
     dueDateKst: toKstEndOfDay(fields.duedate) ?? undefined,
+    resolutionDate: fields.resolutiondate ?? undefined,
     parentKey: parentKey ?? (isSubtask ? fields.parent?.key : undefined) ?? undefined,
     isSubtask,
     storyPoints,

@@ -89,7 +89,7 @@ export default function App() {
                 <>
                   {/* Summary Cards */}
                   <div className="grid grid-cols-2 gap-4 md:grid-cols-4">
-                    <StatsSummaryCard title="전체 프로젝트" value={summary.totalProjects} />
+                    <StatsSummaryCard title="전체 에픽" value={summary.totalProjects} />
                     <StatsSummaryCard title="전체 이슈" value={summary.totalIssues} />
                     <StatsSummaryCard
                       title="평균 OTDR"
@@ -120,7 +120,7 @@ export default function App() {
 
                   {/* Project Progress Chart */}
                   <section className="rounded-lg border border-gray-200 bg-white p-6">
-                    <h2 className="mb-4 text-lg font-semibold text-gray-800">프로젝트 진행률</h2>
+                    <h2 className="mb-4 text-lg font-semibold text-gray-800">에픽 진행률</h2>
                     <ProjectProgressChart
                       data={filteredProjectMetrics}
                       onEpicClick={(key, name) => setEpicModal({ epicKey: key, epicName: name })}

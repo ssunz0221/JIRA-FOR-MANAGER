@@ -15,7 +15,7 @@ import type { UnitDueDateHistory } from '@/db/models/UnitDueDateHistory';
 
 const EPIC_FIELDS = ['summary', 'description', 'status', 'assignee', 'issuetype'];
 const ISSUE_FIELDS = [
-  'summary', 'status', 'assignee', 'duedate',
+  'summary', 'status', 'assignee', 'duedate', 'resolutiondate',
   'issuetype', 'priority', 'created', 'updated',
   'parent',
   'customfield_10917', // Start date (시작일)

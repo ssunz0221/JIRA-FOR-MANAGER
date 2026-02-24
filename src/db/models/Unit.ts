@@ -27,6 +27,8 @@ export interface Unit {
   parentKey?: string;
   /** 서브태스크 여부 */
   isSubtask?: boolean;
+  /** Resolution Date (ISO 8601) - JIRA resolutiondate */
+  resolutionDate?: string;
   /** Story Point 또는 Estimate 값 (SP: 원본, Estimate: 초→시간 변환) */
   storyPoints?: number;
   /** 이슈 유형 (예: "Story", "Task", "Bug") */

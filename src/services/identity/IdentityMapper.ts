@@ -9,6 +9,11 @@ export interface UnmappedWorker {
   email?: string;
 }
 
+/** 통합 작업자 정보 (미매핑 + 제외 포함) */
+export interface UnmappedWorkerWithStatus extends UnmappedWorker {
+  excluded: boolean;
+}
+
 export class IdentityMapper {
   /**
    * JIRA 동기화 후, workers 테이블의 모든 작업자를 members 테이블과 대조한다.
@@ -44,6 +49,47 @@ export class IdentityMapper {
     }
 
     return unmapped;
+  }
+
+  /** 미매핑 + 제외 작업자를 하나의 통합 리스트로 반환한다. */
+  async findAllUnmappedOrExcludedWorkers(): Promise<UnmappedWorkerWithStatus[]> {
+    const workers = await workerRepository.getAll();
+    const members = await memberRepository.getAll();
+
+    const byAccountId = new Map<string, Member>();
+    const byEmail = new Map<string, Member>();
+    for (const member of members) {
+      if (member.jiraAccountId) byAccountId.set(member.jiraAccountId, member);
+      if (member.email) byEmail.set(member.email.toLowerCase(), member);
+    }
+
+    const result: UnmappedWorkerWithStatus[] = [];
+
+    for (const worker of workers) {
+      if (worker.excluded) {
+        result.push({
+          accountId: worker.accountId,
+          displayName: worker.displayName,
+          email: worker.email,
+          excluded: true,
+        });
+        continue;
+      }
+
+      const matchByAccountId = byAccountId.has(worker.accountId);
+      const matchByEmail = worker.email && byEmail.has(worker.email.toLowerCase());
+
+      if (!matchByAccountId && !matchByEmail) {
+        result.push({
+          accountId: worker.accountId,
+          displayName: worker.displayName,
+          email: worker.email,
+          excluded: false,
+        });
+      }
+    }
+
+    return result;
   }
 
   /** 제외 처리된 작업자 목록을 반환한다. */

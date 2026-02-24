@@ -17,5 +17,10 @@ export default defineConfig({
   build: {
     outDir: 'dist',
     sourcemap: process.env.NODE_ENV === 'development',
+    rollupOptions: {
+      input: {
+        newtab: resolve(__dirname, 'src/newtab/newtab.html'),
+      },
+    },
   },
 });

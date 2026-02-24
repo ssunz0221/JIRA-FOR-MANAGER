@@ -32,7 +32,7 @@ export function SyncProjectForm({ config, onSave }: Props) {
       // 기존 선택 유지
       setChecked(new Set(config.selectedProjectKeys ?? []));
     } catch (e) {
-      setError('프로젝트 목록을 불러오지 못했습니다. 연결 설정을 확인해주세요.');
+      setError('에픽 목록을 불러오지 못했습니다. 연결 설정을 확인해주세요.');
     } finally {
       setLoading(false);
     }
@@ -62,7 +62,7 @@ export function SyncProjectForm({ config, onSave }: Props) {
   return (
     <div className="space-y-4">
       <p className="text-sm text-gray-500">
-        동기화할 JIRA 프로젝트를 선택합니다. 선택하지 않으면 접근 가능한 모든 프로젝트를 동기화합니다.
+        동기화할 JIRA 에픽을 선택합니다. 선택하지 않으면 접근 가능한 모든 에픽을 동기화합니다.
       </p>
 
       <div className="flex items-center gap-3">
@@ -71,11 +71,11 @@ export function SyncProjectForm({ config, onSave }: Props) {
           disabled={loading}
           className="rounded-md bg-gray-100 px-4 py-2 text-sm font-medium text-gray-700 hover:bg-gray-200 disabled:opacity-50"
         >
-          {loading ? '불러오는 중...' : '프로젝트 목록 불러오기'}
+          {loading ? '불러오는 중...' : '에픽 목록 불러오기'}
         </button>
         {config.selectedProjectKeys?.length ? (
           <span className="text-xs text-gray-400">
-            현재 선택: {config.selectedProjectKeys.length}개 프로젝트
+            현재 선택: {config.selectedProjectKeys.length}개 에픽
           </span>
         ) : (
           <span className="text-xs text-gray-400">현재: 전체 동기화</span>

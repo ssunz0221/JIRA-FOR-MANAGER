@@ -165,6 +165,9 @@ function IssueRow({
           <DueDateHistoryRow unitKey={unit.jiraKey} />
         </div>
       </td>
+      <td className={clsx('px-4 py-3 text-gray-600', isSubtask ? 'text-xs' : 'text-sm')}>
+        {unit.resolutionDate ? unit.resolutionDate.slice(0, 10) : '-'}
+      </td>
     </tr>
   );
 }
@@ -221,9 +224,14 @@ export function EpicDetailModal({ epicKey, epicName, units, baseUrl, onClose }: 
         {/* 헤더 */}
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 shrink-0">
           <div className="flex items-center gap-3">
-            <span className="rounded bg-blue-100 px-2 py-0.5 text-sm font-mono font-medium text-blue-700">
+            <a
+              href={`${baseUrl}/browse/${epicKey}`}
+              target="_blank"
+              rel="noopener noreferrer"
+              className="rounded bg-blue-100 px-2 py-0.5 text-sm font-mono font-medium text-blue-700 hover:bg-blue-200 hover:underline"
+            >
               {epicKey}
-            </span>
+            </a>
             <h2 className="text-base font-semibold text-gray-800 truncate max-w-xl">{epicName}</h2>
           </div>
           <button
@@ -257,7 +265,8 @@ export function EpicDetailModal({ epicKey, epicName, units, baseUrl, onClose }: 
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-20">상태</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-28">시작일</th>
                   <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-28">종료일</th>
-                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-44">마감일</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-44">DueDate</th>
+                  <th className="px-4 py-3 text-left text-xs font-medium text-gray-500 w-28">Resolved</th>
                 </tr>
               </thead>
               <tbody className="divide-y divide-gray-100">
