@@ -20,6 +20,18 @@ export function MonthlyStatsSection({ filteredUnits, memberFilter, estimationTyp
   );
   const [selectedMonth, setSelectedMonth] = useState<string | null>(null);
 
+  // 월 목록 추출 (정렬) — 훅은 early return 전에 호출해야 함
+  const availableMonths = useMemo(() => {
+    const months = new Set(personStats.map((s) => s.month));
+    return Array.from(months).sort();
+  }, [personStats]);
+
+  // 선택된 월로 필터링
+  const filteredPersonStats = useMemo(() => {
+    if (!selectedMonth) return personStats;
+    return personStats.filter((s) => s.month === selectedMonth);
+  }, [personStats, selectedMonth]);
+
   if (isLoading) return null;
 
   const hasData = personStats.length > 0 || teamStats.length > 0 || totalStats.length > 0;
@@ -31,18 +43,6 @@ export function MonthlyStatsSection({ filteredUnits, memberFilter, estimationTyp
   const isPersonFilter = !!memberFilter?.memberAccountId;
   const isTeamFilter = !!memberFilter?.teamId && !isPersonFilter;
   const isAllFilter = !isPersonFilter && !isTeamFilter;
-
-  // 월 목록 추출 (정렬)
-  const availableMonths = useMemo(() => {
-    const months = new Set(personStats.map((s) => s.month));
-    return Array.from(months).sort();
-  }, [personStats]);
-
-  // 선택된 월로 필터링
-  const filteredPersonStats = useMemo(() => {
-    if (!selectedMonth) return personStats;
-    return personStats.filter((s) => s.month === selectedMonth);
-  }, [personStats, selectedMonth]);
 
   return (
     <section className="rounded-xl border border-gray-200 bg-white shadow-sm">
