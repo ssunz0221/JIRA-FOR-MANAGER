@@ -5,7 +5,7 @@ import { projectRepository } from '@/db/repositories/ProjectRepository';
 import { unitRepository } from '@/db/repositories/UnitRepository';
 import { workerRepository } from '@/db/repositories/WorkerRepository';
 import { chromeStorageService } from '@/services/storage/ChromeStorageService';
-import { JIRA_MAX_RESULTS } from '@/utils/constants';
+import { JIRA_MAX_RESULTS, NO_EPIC_KEY } from '@/utils/constants';
 import { nowKst } from '@/utils/kst';
 import { db } from '@/db/database';
 import type { Project } from '@/db/models/Project';
@@ -143,6 +143,26 @@ export class JiraAdapter {
   }
 
   /**
+   * 에픽에 연결되지 않은 이슈를 가져온다.
+   * Epic Link 필드가 비어있고 서브태스크가 아닌 이슈를 조회한다.
+   */
+  async fetchIssuesWithoutEpic(epicLinkFieldId: string | null): Promise<JiraIssue[]> {
+    const config = await chromeStorageService.getConfig();
+    const keys = config.selectedProjectKeys;
+    if (!keys?.length) return [];
+
+    let jql: string;
+    if (epicLinkFieldId) {
+      const cfNum = epicLinkFieldId.replace('customfield_', '');
+      jql = `project in (${keys.join(',')}) AND issuetype != Epic AND cf[${cfNum}] is EMPTY AND issuetype not in subtaskIssueTypes() ORDER BY key ASC`;
+    } else {
+      jql = `project in (${keys.join(',')}) AND issuetype != Epic AND parent is EMPTY AND issuetype not in subtaskIssueTypes() ORDER BY key ASC`;
+    }
+
+    return this.fetchAllPages(jql, this.dynamicIssueFields);
+  }
+
+  /**
    * 전체 동기화를 실행한다.
    * 프로젝트가 선택되지 않으면 skipped를 반환한다.
    * @returns 동기화된 Epic/Issue 수 또는 skipped
@@ -212,7 +232,46 @@ export class JiraAdapter {
       }
     }
 
-    // 3. 서브태스크 일괄 조회
+    // 3. 에픽 없는 이슈 가져오기
+    try {
+      const noEpicIssues = await this.fetchIssuesWithoutEpic(epicLinkFieldId);
+      if (noEpicIssues.length > 0) {
+        const noEpicUnits = noEpicIssues.map((issue) =>
+          mapIssueToUnit(issue, NO_EPIC_KEY, undefined, this.estimationConfig),
+        );
+        allUnits.push(...noEpicUnits);
+
+        // 서브태스크 조회용 키 수집
+        for (const unit of noEpicUnits) {
+          if (!unit.isSubtask) {
+            parentIssueKeys.push(unit.jiraKey);
+          }
+        }
+
+        // Worker 추출
+        for (const issue of noEpicIssues) {
+          const worker = extractWorker(issue);
+          if (worker) {
+            workerMap.set(worker.accountId, worker);
+          }
+        }
+
+        // 가상 프로젝트 추가
+        const virtualProject: Project = {
+          jiraKey: NO_EPIC_KEY,
+          projectName: '에픽 없음',
+          status: 'N/A',
+          totalUnits: noEpicUnits.filter((u) => !u.isSubtask).length,
+          completedUnits: noEpicUnits.filter((u) => !u.isSubtask && u.statusCategory === 'done').length,
+          lastSyncedAt: nowKst(),
+        };
+        projects.push(virtualProject);
+      }
+    } catch (error) {
+      console.error('[JIRA PMS] Failed to fetch issues without epic:', error);
+    }
+
+    // 4. 서브태스크 일괄 조회
     try {
       const subtaskIssues = await this.fetchSubtasksByParentKeys(parentIssueKeys);
       // 부모 이슈의 epicKey 매핑
@@ -235,7 +294,7 @@ export class JiraAdapter {
       console.error('[JIRA PMS] Failed to fetch subtasks:', error);
     }
 
-    // 4. dueDate 변경 이력 감지
+    // 5. dueDate 변경 이력 감지
     const existingUnits = await unitRepository.getAll();
     const existingMap = new Map(existingUnits.map((u) => [u.jiraKey, u.dueDate ?? '']));
     const histories: UnitDueDateHistory[] = [];
@@ -256,7 +315,7 @@ export class JiraAdapter {
       await db.unitDueDateHistory.bulkAdd(histories);
     }
 
-    // 5. DB에 일괄 적재
+    // 6. DB에 일괄 적재
     await projectRepository.bulkPut(projects);
     await unitRepository.bulkPut(allUnits);
     await workerRepository.bulkPut(Array.from(workerMap.values()));

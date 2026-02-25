@@ -2,6 +2,7 @@ import { useState, useMemo } from 'react';
 import { useLiveQuery } from 'dexie-react-hooks';
 import { db } from '@/db/database';
 import type { Unit } from '@/db/models/Unit';
+import { NO_EPIC_KEY } from '@/utils/constants';
 import clsx from 'clsx';
 
 interface Props {
@@ -224,14 +225,20 @@ export function EpicDetailModal({ epicKey, epicName, units, baseUrl, onClose }: 
         {/* 헤더 */}
         <div className="flex items-center justify-between border-b border-gray-200 px-6 py-4 shrink-0">
           <div className="flex items-center gap-3">
-            <a
-              href={`${baseUrl}/browse/${epicKey}`}
-              target="_blank"
-              rel="noopener noreferrer"
-              className="rounded bg-blue-100 px-2 py-0.5 text-sm font-mono font-medium text-blue-700 hover:bg-blue-200 hover:underline"
-            >
-              {epicKey}
-            </a>
+            {epicKey === NO_EPIC_KEY ? (
+              <span className="rounded bg-gray-200 px-2 py-0.5 text-sm font-mono font-medium text-gray-600">
+                에픽 없음
+              </span>
+            ) : (
+              <a
+                href={`${baseUrl}/browse/${epicKey}`}
+                target="_blank"
+                rel="noopener noreferrer"
+                className="rounded bg-blue-100 px-2 py-0.5 text-sm font-mono font-medium text-blue-700 hover:bg-blue-200 hover:underline"
+              >
+                {epicKey}
+              </a>
+            )}
             <h2 className="text-base font-semibold text-gray-800 truncate max-w-xl">{epicName}</h2>
           </div>
           <button
