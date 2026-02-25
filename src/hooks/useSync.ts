@@ -18,15 +18,25 @@ export function useSync() {
     return () => clearInterval(interval);
   }, [refreshStatus]);
 
-  const triggerSync = useCallback(async () => {
+  const triggerFullSync = useCallback(async () => {
     setTriggering(true);
     try {
-      await chrome.runtime.sendMessage({ type: MSG.SYNC_NOW });
+      await chrome.runtime.sendMessage({ type: MSG.SYNC_FULL });
     } finally {
       setTriggering(false);
       refreshStatus();
     }
   }, [refreshStatus]);
 
-  return { syncStatus, triggering, triggerSync, refreshStatus };
+  const triggerRecentSync = useCallback(async () => {
+    setTriggering(true);
+    try {
+      await chrome.runtime.sendMessage({ type: MSG.SYNC_RECENT });
+    } finally {
+      setTriggering(false);
+      refreshStatus();
+    }
+  }, [refreshStatus]);
+
+  return { syncStatus, triggering, triggerFullSync, triggerRecentSync, refreshStatus };
 }

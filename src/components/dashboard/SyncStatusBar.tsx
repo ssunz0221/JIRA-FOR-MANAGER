@@ -1,7 +1,7 @@
 import { useSync } from '@/hooks/useSync';
 
 export function SyncStatusBar() {
-  const { syncStatus, triggering, triggerSync } = useSync();
+  const { syncStatus, triggering, triggerFullSync, triggerRecentSync } = useSync();
 
   const isSyncing = syncStatus.status === 'syncing' || triggering;
 
@@ -31,16 +31,25 @@ export function SyncStatusBar() {
         )}
       </div>
 
-      <button
-        onClick={triggerSync}
-        disabled={isSyncing}
-        className="flex items-center gap-2 rounded-md bg-jira-blue px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
-      >
-        {isSyncing && (
-          <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
-        )}
-        {isSyncing ? '동기화 중...' : '지금 동기화'}
-      </button>
+      <div className="flex items-center gap-2">
+        <button
+          onClick={triggerRecentSync}
+          disabled={isSyncing}
+          className="flex items-center gap-2 rounded-md bg-jira-blue px-3 py-1.5 text-sm text-white hover:bg-blue-700 disabled:opacity-50"
+        >
+          {isSyncing && (
+            <div className="h-4 w-4 animate-spin rounded-full border-2 border-white border-t-transparent" />
+          )}
+          {isSyncing ? '동기화 중...' : '최근 동기화'}
+        </button>
+        <button
+          onClick={triggerFullSync}
+          disabled={isSyncing}
+          className="rounded-md bg-gray-600 px-3 py-1.5 text-sm text-white hover:bg-gray-700 disabled:opacity-50"
+        >
+          전체 동기화
+        </button>
+      </div>
     </div>
   );
 }

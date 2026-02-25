@@ -40,20 +40,29 @@ chrome.action.onClicked.addListener(async () => {
   }
 });
 
-// 알람 이벤트 → 자동 동기화
+// 알람 이벤트 → 자동 동기화 (비활성화 설정 시 무시)
 chrome.alarms.onAlarm.addListener(async (alarm) => {
   if (alarm.name === ALARM_NAME) {
-    await runSync();
+    const config = await chromeStorageService.getConfig();
+    if (config.autoSyncEnabled === false) return;
+    await runSync('recent');
   }
 });
 
 // UI에서 보내는 메시지 처리
 chrome.runtime.onMessage.addListener((message, _sender, sendResponse) => {
-  if (message.type === MSG.SYNC_NOW) {
-    runSync()
+  if (message.type === MSG.SYNC_FULL) {
+    runSync('full')
       .then(() => sendResponse({ success: true }))
       .catch((err) => sendResponse({ success: false, error: String(err) }));
-    return true; // 비동기 응답을 위해 true 반환
+    return true;
+  }
+
+  if (message.type === MSG.SYNC_RECENT || message.type === MSG.SYNC_NOW) {
+    runSync('recent')
+      .then(() => sendResponse({ success: true }))
+      .catch((err) => sendResponse({ success: false, error: String(err) }));
+    return true;
   }
 
   if (message.type === MSG.GET_SYNC_STATUS) {
@@ -70,7 +79,7 @@ function setupAlarm(intervalMinutes: number) {
   });
 }
 
-async function runSync() {
+async function runSync(mode: 'full' | 'recent') {
   const config = await chromeStorageService.getConfig();
   if (!config.baseUrl || !config.pat) {
     console.warn('[JIRA PMS] Sync skipped: no JIRA config');
@@ -78,5 +87,9 @@ async function runSync() {
   }
 
   const syncService = new SyncService(config);
-  await syncService.fullSync();
+  if (mode === 'full') {
+    await syncService.fullSync();
+  } else {
+    await syncService.recentSync();
+  }
 }

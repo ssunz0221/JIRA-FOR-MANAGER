@@ -10,6 +10,8 @@ export const NO_EPIC_KEY = '__NO_EPIC__';
 /** chrome.runtime 메시지 타입 */
 export const MSG = {
   SYNC_NOW: 'SYNC_NOW',
+  SYNC_FULL: 'SYNC_FULL',
+  SYNC_RECENT: 'SYNC_RECENT',
   GET_SYNC_STATUS: 'GET_SYNC_STATUS',
   SYNC_STATUS_CHANGED: 'SYNC_STATUS_CHANGED',
 } as const;

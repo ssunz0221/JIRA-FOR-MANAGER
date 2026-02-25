@@ -12,6 +12,8 @@ export interface JiraConfig {
   estimateFieldId?: string;
   /** 기본 팀 이름 목록 */
   defaultTeamNames?: string[];
+  /** 자동 동기화 활성화 여부 (기본: true) */
+  autoSyncEnabled?: boolean;
 }
 
 const STORAGE_KEYS = {

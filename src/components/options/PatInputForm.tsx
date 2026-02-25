@@ -9,6 +9,7 @@ interface Props {
 export function PatInputForm({ config, onSave }: Props) {
   const [baseUrl, setBaseUrl] = useState(config?.baseUrl ?? '');
   const [pat, setPat] = useState(config?.pat ?? '');
+  const [autoSyncEnabled, setAutoSyncEnabled] = useState(config?.autoSyncEnabled !== false);
   const [syncInterval, setSyncInterval] = useState(config?.syncIntervalMinutes ?? 15);
   const [saving, setSaving] = useState(false);
   const [message, setMessage] = useState<{ type: 'success' | 'error'; text: string } | null>(null);
@@ -36,6 +37,7 @@ export function PatInputForm({ config, onSave }: Props) {
         baseUrl: baseUrl.replace(/\/+$/, ''),
         pat,
         syncIntervalMinutes: syncInterval,
+        autoSyncEnabled,
         epicLinkFieldId: config?.epicLinkFieldId,
         selectedProjectKeys: config?.selectedProjectKeys,
         estimationType: config?.estimationType,
@@ -79,11 +81,24 @@ export function PatInputForm({ config, onSave }: Props) {
       </div>
 
       <div>
+        <label className="flex items-center gap-2 text-sm font-medium text-gray-700">
+          <input
+            type="checkbox"
+            checked={autoSyncEnabled}
+            onChange={(e) => setAutoSyncEnabled(e.target.checked)}
+            className="h-4 w-4 rounded border-gray-300 text-jira-blue focus:ring-jira-blue"
+          />
+          자동 동기화 사용
+        </label>
+      </div>
+
+      <div className={autoSyncEnabled ? '' : 'opacity-50 pointer-events-none'}>
         <label className="block text-sm font-medium text-gray-700">자동 동기화 주기</label>
         <select
           value={syncInterval}
           onChange={(e) => setSyncInterval(Number(e.target.value))}
-          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-jira-blue focus:outline-none focus:ring-1 focus:ring-jira-blue"
+          disabled={!autoSyncEnabled}
+          className="mt-1 block w-full rounded-md border border-gray-300 px-3 py-2 shadow-sm focus:border-jira-blue focus:outline-none focus:ring-1 focus:ring-jira-blue disabled:bg-gray-100"
         >
           <option value={5}>5분</option>
           <option value={15}>15분</option>
